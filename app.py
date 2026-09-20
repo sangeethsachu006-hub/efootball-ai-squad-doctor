@@ -47,7 +47,7 @@ def db():
 def touch(u):
     c = db()
     c.execute(
-        "INSERT OR IGNORE INTO users(id,username) VALUES(?,?,?)",
+        "INSERT OR IGNORE INTO users(id,username) VALUES(?,?)",
         (u.id, u.username)
     )
     c.commit()
