@@ -86,9 +86,9 @@ HELP = """⚽ *eFootball AI Squad Doctor V2*
 /saved — usage stats
 /help — help
 
-📸 *New V2 feature:* send an eFootball squad screenshot and the bot will use Gemini vision AI to identify the visible squad structure and generate tactical recommendations.
+📸 *New V2 feature:* send an eFootball squad screenshot and the bot will use vision AI to identify the visible squad structure and generate tactical recommendations.
 
-⚠️ Screenshot recognition requires an `GEMINI_API_KEY` on the Render service.
+⚠️ Screenshot recognition requires an `OPENAI_API_KEY` on the Render service.
 """
 
 
@@ -121,10 +121,10 @@ async def analyze_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 async def screenshot_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     touch(update.effective_user)
     ctx.user_data["mode"] = "screenshot"
-    if not os.getenv("GEMINI_API_KEY"):
+    if not os.getenv("OPENAI_API_KEY"):
         await update.message.reply_text(
-            "📸 Screenshot Analyzer is installed, but the Gemini vision API key is not configured yet.\n\n"
-            "Add GEMINI_API_KEY to Render Environment Variables, then try again."
+            "📸 Screenshot Analyzer is installed, but the vision API key is not configured yet.\n\n"
+            "Add OPENAI_API_KEY to Render Environment Variables, then try again."
         )
         return
     await update.message.reply_text(
@@ -182,9 +182,9 @@ async def buttons(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await q.message.reply_text("Send your squad details.")
     elif q.data == "screenshot":
         ctx.user_data["mode"] = "screenshot"
-        if not os.getenv("GEMINI_API_KEY"):
+        if not os.getenv("OPENAI_API_KEY"):
             await q.message.reply_text(
-                "📸 Add GEMINI_API_KEY to Render Environment Variables first."
+                "📸 Add OPENAI_API_KEY to Render Environment Variables first."
             )
         else:
             await q.message.reply_text(
@@ -236,10 +236,10 @@ async def photo(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
     touch(update.effective_user)
 
-    if not os.getenv("GEMINI_API_KEY"):
+    if not os.getenv("OPENAI_API_KEY"):
         await update.message.reply_text(
             "📸 I received your screenshot, but screenshot AI is not configured yet.\n\n"
-            "Add GEMINI_API_KEY in Render → Environment Variables."
+            "Add OPENAI_API_KEY in Render → Environment Variables."
         )
         return
 
@@ -286,30 +286,34 @@ async def lifespan(app: FastAPI):
     await telegram_app.bot.set_webhook(
         url=f"{PUBLIC_URL}{WEBHOOK_PATH}",
         allowed_updates=Update.ALL_TYPES,
-        drop_pending_updates=True,
+        drop_pending_updates=False,
         secret_token=WEBHOOK_SECRET or None,
     )
     logger.info("Telegram webhook configured: %s%s", PUBLIC_URL, WEBHOOK_PATH)
 
     yield
 
+    # IMPORTANT:
+    # Do NOT delete the Telegram webhook during normal Render shutdowns.
+    # Render free instances can restart/sleep, and deleting the webhook here
+    # can leave the bot with no webhook after a restart.
     try:
-        await telegram_app.bot.delete_webhook()
-    finally:
         await telegram_app.stop()
         await telegram_app.shutdown()
+    except Exception:
+        logger.exception("Telegram application shutdown failed")
 
 
 app = FastAPI(
     title="eFootball AI Squad Doctor V2",
-    version="2.0.0",
+    version="2.0.1",
     lifespan=lifespan,
 )
 
 
 @app.get("/")
 async def root():
-    return {"status": "ok", "service": "efootball-ai-squad-doctor", "version": "2.0.0"}
+    return {"status": "ok", "service": "efootball-ai-squad-doctor", "version": "2.0.1"}
 
 
 @app.get("/health")
@@ -328,3 +332,4 @@ async def telegram_webhook(request: Request):
     update = Update.de_json(data, telegram_app.bot)
     await telegram_app.update_queue.put(update)
     return {"ok": True}
+    
