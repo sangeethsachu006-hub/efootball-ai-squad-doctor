@@ -1,9 +1,14 @@
 services:
-  - type: worker
-    name: efootball-ai-bot
+  - type: web
+    name: efootball-ai-squad-doctor
     runtime: python
+    plan: free
     buildCommand: pip install -r requirements.txt
-    startCommand: python bot.py
+    startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: BOT_TOKEN
+        sync: false
+      - key: PUBLIC_URL
+        sync: false
+      - key: WEBHOOK_SECRET
         sync: false

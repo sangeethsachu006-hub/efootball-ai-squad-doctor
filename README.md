@@ -1,21 +1,25 @@
-# eFootball AI Squad Doctor
+# eFootball AI Squad Doctor — Free Render Web Service
 
-Production-oriented MVP Telegram companion bot.
+This version uses a Telegram webhook + FastAPI so it can run as a Render Web Service instead of a paid Background Worker.
 
-Features:
-- dashboard buttons
-- squad tactical analysis
-- SQLite user/usage tracking
-- player comparison workflow placeholder
-- architecture ready for vision/OCR/player database modules
+## Render settings
 
-Setup:
-1. Create bot with Telegram @BotFather.
-2. Install Python 3.10+.
-3. `pip install -r requirements.txt`
-4. Set `BOT_TOKEN`.
-5. `python bot.py`
+Service type: Web Service
+Plan: Free
 
-For 24/7 hosting, run on a VPS/cloud service with an environment variable for BOT_TOKEN.
+Build command:
+pip install -r requirements.txt
 
-Do not add cheats, exploits, game automation, account access, or unauthorized transactions.
+Start command:
+uvicorn app:app --host 0.0.0.0 --port $PORT
+
+Environment variables:
+- BOT_TOKEN = your Telegram BotFather token
+- PUBLIC_URL = your Render service URL, e.g. https://efootball-ai-squad-doctor.onrender.com
+- WEBHOOK_SECRET = a random secret string (recommended)
+
+## Important
+
+The current MVP is still text-based tactical analysis. Screenshot recognition, player database, AI vision, squad builder, pack analyzer and other advanced modules can be added next.
+
+Render's free web services are intended for testing/hobby use and can spin down when idle. SQLite data on a free service is not durable across every restart/redeploy, so use a managed database later if saved data becomes important.
