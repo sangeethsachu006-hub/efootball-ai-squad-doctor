@@ -1,12 +1,14 @@
-import base64
 import json
 import os
-from openai import AsyncOpenAI
+import asyncio
+
+from google import genai
+from google.genai import types
 
 PROMPT = """
 You are the image-recognition module for an eFootball squad analysis bot.
 
-Inspect the supplied eFootball screenshot carefully. Extract ONLY information that is visibly supported.
+Inspect the supplied eFootball squad screenshot carefully. Extract ONLY information that is visibly supported.
 Do not invent player names, ratings, positions, playstyles, formation or tactics.
 
 Return valid JSON with exactly these keys:
@@ -27,32 +29,31 @@ If the screenshot is not a squad screen, return an empty players list and explai
 """
 
 async def analyze_squad_image(image_bytes: bytes) -> dict:
-    api_key = os.getenv("OPENAI_API_KEY")
+    api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
-        raise RuntimeError("OPENAI_API_KEY is missing.")
+        raise RuntimeError("GEMINI_API_KEY is missing.")
 
-    model = os.getenv("VISION_MODEL", "gpt-5.6-luna")
-    client = AsyncOpenAI(api_key=api_key)
+    model = os.getenv("VISION_MODEL", "gemini-2.5-flash-lite")
+    client = genai.Client(api_key=api_key)
 
-    b64 = base64.b64encode(image_bytes).decode("utf-8")
-
-    response = await client.responses.create(
-        model=model,
-        input=[
-            {
-                "role": "user",
-                "content": [
-                    {"type": "input_text", "text": PROMPT},
-                    {
-                        "type": "input_image",
-                        "image_url": f"data:image/jpeg;base64,{b64}",
-                    },
-                ],
-            }
-        ],
+    image_part = types.Part.from_bytes(
+        data=image_bytes,
+        mime_type="image/jpeg",
     )
 
-    raw = response.output_text.strip()
+    def call_model():
+        return client.models.generate_content(
+            model=model,
+            contents=[PROMPT, image_part],
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json",
+                temperature=0.1,
+                max_output_tokens=1200,
+            ),
+        )
+
+    response = await asyncio.to_thread(call_model)
+    raw = (response.text or "").strip()
 
     if raw.startswith("```"):
         raw = raw.replace("```json", "").replace("```", "").strip()

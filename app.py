@@ -86,9 +86,9 @@ HELP = """⚽ *eFootball AI Squad Doctor V2*
 /saved — usage stats
 /help — help
 
-📸 *New V2 feature:* send an eFootball squad screenshot and the bot will use vision AI to identify the visible squad structure and generate tactical recommendations.
+📸 *New V2 feature:* send an eFootball squad screenshot and the bot will use Gemini vision AI to identify the visible squad structure and generate tactical recommendations.
 
-⚠️ Screenshot recognition requires an `OPENAI_API_KEY` on the Render service.
+⚠️ Screenshot recognition requires an `GEMINI_API_KEY` on the Render service.
 """
 
 
@@ -121,10 +121,10 @@ async def analyze_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 async def screenshot_cmd(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     touch(update.effective_user)
     ctx.user_data["mode"] = "screenshot"
-    if not os.getenv("OPENAI_API_KEY"):
+    if not os.getenv("GEMINI_API_KEY"):
         await update.message.reply_text(
-            "📸 Screenshot Analyzer is installed, but the vision API key is not configured yet.\n\n"
-            "Add OPENAI_API_KEY to Render Environment Variables, then try again."
+            "📸 Screenshot Analyzer is installed, but the Gemini vision API key is not configured yet.\n\n"
+            "Add GEMINI_API_KEY to Render Environment Variables, then try again."
         )
         return
     await update.message.reply_text(
@@ -182,9 +182,9 @@ async def buttons(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await q.message.reply_text("Send your squad details.")
     elif q.data == "screenshot":
         ctx.user_data["mode"] = "screenshot"
-        if not os.getenv("OPENAI_API_KEY"):
+        if not os.getenv("GEMINI_API_KEY"):
             await q.message.reply_text(
-                "📸 Add OPENAI_API_KEY to Render Environment Variables first."
+                "📸 Add GEMINI_API_KEY to Render Environment Variables first."
             )
         else:
             await q.message.reply_text(
@@ -236,10 +236,10 @@ async def photo(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
     touch(update.effective_user)
 
-    if not os.getenv("OPENAI_API_KEY"):
+    if not os.getenv("GEMINI_API_KEY"):
         await update.message.reply_text(
             "📸 I received your screenshot, but screenshot AI is not configured yet.\n\n"
-            "Add OPENAI_API_KEY in Render → Environment Variables."
+            "Add GEMINI_API_KEY in Render → Environment Variables."
         )
         return
 
