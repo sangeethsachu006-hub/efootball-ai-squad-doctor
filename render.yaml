@@ -8,6 +8,10 @@ services:
     envVars:
       - key: BOT_TOKEN
         sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: VISION_MODEL
+        value: gpt-5.6-luna
       - key: PUBLIC_URL
         sync: false
       - key: WEBHOOK_SECRET

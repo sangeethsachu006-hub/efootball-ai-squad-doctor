@@ -1,25 +1,45 @@
-# eFootball AI Squad Doctor — Free Render Web Service
+# eFootball AI Squad Doctor V2
 
-This version uses a Telegram webhook + FastAPI so it can run as a Render Web Service instead of a paid Background Worker.
+V2 adds screenshot-based squad recognition using a vision model.
 
-## Render settings
+## New features
 
-Service type: Web Service
-Plan: Free
+- 📸 Send an eFootball squad screenshot
+- 🤖 Vision AI extracts visible formation, playstyle, player names/positions/playing styles
+- 🧠 Tactical heuristic analyzes the extracted squad
+- 👥 Shows recognized players and visibility notes
+- Existing text analysis remains available
 
-Build command:
+## Render
+
+Use the existing Render Web Service.
+
+Build:
 pip install -r requirements.txt
 
-Start command:
+Start:
 uvicorn app:app --host 0.0.0.0 --port $PORT
 
 Environment variables:
-- BOT_TOKEN = your Telegram BotFather token
-- PUBLIC_URL = your Render service URL, e.g. https://efootball-ai-squad-doctor.onrender.com
-- WEBHOOK_SECRET = a random secret string (recommended)
+
+BOT_TOKEN = your Telegram BotFather token
+OPENAI_API_KEY = your OpenAI API key
+VISION_MODEL = gpt-5.6-luna
+PUBLIC_URL = your Render service URL
+WEBHOOK_SECRET = optional random secret
+
+The screenshot module uses a vision-capable OpenAI model. OpenAI's current model documentation lists GPT-5.6 Luna as a cost-sensitive model with image input support. API usage can incur charges, so set usage limits/budget controls in your API account before testing at scale.
+
+## Telegram
+
+After deployment, use:
+ /start
+ /screenshot
+
+Then send a clear full-squad screenshot.
 
 ## Important
 
-The current MVP is still text-based tactical analysis. Screenshot recognition, player database, AI vision, squad builder, pack analyzer and other advanced modules can be added next.
+Vision extraction can make mistakes when text is small, cropped, blurred, covered by UI elements, or otherwise unreadable. The bot is instructed not to invent unreadable player information.
 
-Render's free web services are intended for testing/hobby use and can spin down when idle. SQLite data on a free service is not durable across every restart/redeploy, so use a managed database later if saved data becomes important.
+SQLite is suitable for an MVP but is not durable storage for production. Move user/squad data to managed Postgres later.
